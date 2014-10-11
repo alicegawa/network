@@ -1,0 +1,102 @@
+load_file("nrngui.hoc")
+//load cell template
+load_file("test_cell_ref.hoc")
+
+//setting
+v_init = -65
+NCELL = 100
+NCELL_E = 80 //must be (<NCELL)
+NCELL_VTA = 10
+NSYN = 10
+
+tstop = 10000
+dt = 0.025
+stimInt = 20
+stimNum = int(tstop/stimInt)
+
+//identify the VTA parameter
+vta_flag = 0
+else_flag = 2
+
+objref cells, nclist, nclist_stim, nclist_spon
+objectvar stim[NCELL_E], sponFire[NCELL]
+
+proc makeCells(){local i, num_cell, num_ecell localobj cell
+    num_cell = $1
+    num_ecell = $2
+    cells = new List()
+    counter = 0
+    counter2 = 0
+    for i=0, num_cell-1 {
+	if(i<num_ecell){
+	    cell = new HHneuronE(160*counter2,20*(i%10),0)
+	}else{
+	    cell = new HHneuronI(160*counter2,20(i%10), 0)
+	}
+	cells.append(cell)
+	counter = counter + 1
+	if(counter==10){
+	    counter = 0
+	    counter2 = counter2 + 1
+	}
+    }
+}
+
+proc connectCells() { local i, num_ecell, num_syn, num_vta localobj src, target, syn, nc
+    num_ecell = $1
+    num_syn = $2
+    num_vta = $3
+    nclist = new List()
+    r = new Random(25525)
+    mem = -1//?
+    for i=0, cells.count-1 {
+	src = cells.object(i)
+	for j=0, num_syn-1 {
+	    if(i<num_ecell){
+		mem = int((i+r.uniform(1,cells.count-1)))%cells.count
+		target = cells.object(mem)
+		if(i<num_vta){
+		    cells.object(i).synlist(2).forSpike = 0//need to consider(the number of times when it recieves the spike. if all expsynstdp responces, the increase of DA is much larger than expected.(?)
+		}else{
+		    cells.object(i).synlist(j+2).forSpike = 2 //for caring to miss the init
+		}
+
+	    }else{
+		mem = int((r.uniform(0,num_ecell)-1))
+		target = cells.object(mem)
+	    }
+	    syn = target.synlist.object(j)
+	    if(i>=num_ecell){
+		syn.e = -100 //???
+	    }
+	    if(i<num_ecell){
+		cells.object(i).soma nclist.append(new NetCon(&v(0.5),syn,0,0,0.02)//in this section, this writing manner describes that various neurons input to one neuron at only one synapse. this should be modified.
+	    }else{
+		cells.object(i).soma nclist.append(new NetCon(&v(0.5),syn,-80,0,0.1)//weight should be modified following to Izhikevidh 2007.
+	    }
+	}
+    }
+}
+
+
+//ins setStim section, it is remained to describe that what cells is potentiated by DA. So, let's add in next case.
+proc setStim(){local i, stim_num, num_vta, dur
+    stim_num = $1
+    num_vta = $2
+    dur = $3
+    nclist_stim = new List()
+    for i=0, num_vta-1 {
+	stim[i] = new NetStim()
+	stim.number = stim_num
+	stim.start = 5
+	nclist_stim.append(new NetCon(stim[i], cells.object(i).synlist(0),0,0,0.02)//weight should be modified
+    }
+    nclist_spon = new List()
+    for i=0, cells.count-1 {
+	sponFire[i] = new GammaNoise(0.8)
+	sponFire[i].amp = 0.065
+	sponFire[i].dur = dur
+	sponFire[i].del = 0
+	nclist_spon.append(new NetCon(sponFire[i],cells.object(i).synlist(1),0,0,0.02)//0.02 ha imanotokoro koteide
+    }
+}

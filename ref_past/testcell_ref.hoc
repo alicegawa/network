@@ -1,0 +1,81 @@
+begintemplate HHneuronE
+
+// define public val and func
+public init, connect2target
+public soma, dend
+public synlist
+
+// use external function
+external lambda_f
+
+create soma, dend
+
+objref synlist
+
+//M=3
+objectvar syn[10]
+objref stim_syn
+
+// constructor
+proc init(){ local x, y, z, i //localobj syn
+    // initialize args
+    x=$1 y=$2 z=$3
+    M=10
+    
+    // set position 
+    connect dend(0), soma(1)
+    soma { pt3dclear() pt3dadd(0+x, 0+y, 0+z, 12) pt3dadd(15+x, 0+y, 0+z, 12) }
+    dend { pt3dclear() pt3dadd(15+x, 0+y, 0+z, 1) pt3dadd(175+x, 0+y, 0+z, 1) }
+        
+    // set geom ( L and diam are automaticaly set by pt3d func )
+    forall { nseg = int((L/(0.1*lambda_f(100))+0.9)/2)*2 + 1 }
+
+    // set biophys
+    forall { Ra = 100 cm = 1 }
+    soma {
+		insert hh
+		gnabar_hh = 0.12
+		gkbar_hh = 0.036
+		gl_hh = 0.0003
+		el_hh = -54.3
+    }
+    dend {
+		insert pas
+		g_pas = 0.001
+		e_pas = -65
+    }
+    
+    // set synapse
+    synlist = new List()
+    
+    
+    printf("start, %d to %d\n", i , M)
+    soma {
+	stim_syn = new Exp2Syn(0.5)
+	synlist.append(stim_syn)
+    }
+    
+   for i=0, M-1 {
+       dend{ 
+            //printf("i=%d\n", i)
+    	    syn[i] = new ExpSynSTDP(0.8) 
+	    //syn[i].onset = 5
+    	    //syn[i].tau1 = 0.5
+	    //syn[i].tau2 = 1.0
+	    //syn[i].e = 0
+	    //syn[i].gmax = 0.05
+    	    synlist.append(syn[i])//ここでとりあえず一個シナプスを作っている。ここを増やしていけばよいようだ。
+	}
+    }
+}
+
+obfunc connect2target() { localobj nc
+    // $o1 target point process
+    soma nc = new NetCon(&v(1), $o1)
+    nc.threshold = 10
+    //if(numarg() == 2){ $o2 = nc }
+    return nc
+}
+
+endtemplate HHneuronE
+

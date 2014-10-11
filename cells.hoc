@@ -1,0 +1,61 @@
+load_file("nrngui.hoc")
+begintemplate HHneuronE
+
+public soma, esyn, esyn2
+create soma
+objref esyn, esyn_for_spon
+objref synlist
+objectvar esyn2[10]
+
+proc init(){local x, y, z, i
+    x=$1 y=$2 z=$3
+    soma {
+	pt3dclear() pt3dadd(0+x,0+y,0+z,12) pt3dadd(15+x,0+y,0+z,12)
+    }
+    
+    soma { 
+	L = 30
+	diam = 30
+	nseg = 1
+	cm = 1
+	insert hh
+    }
+    synlist = new List()
+    soma esyn = new Exp2Syn(0.8)
+    synlist.append(esyn)
+    soma esyn_for_spon = new Exp2Syn(0.8)
+    synlist.append(esyn_for_spon)
+    for i=0, 9 {
+	soma esyn2[i] = new ExpSynSTDP(0.5)
+	synlist.append(esyn2[i])
+    }
+}
+
+endtemplate HHneuronE
+
+begintemplate HHneuronI
+
+public soma, esyn
+create soma
+objref synlist
+objref esyn_for_spon
+objectvar esyn[10]
+
+proc init(){local x, y, z, i
+    x=$1 y=$2 z=$3
+    soma{
+	L = 30
+	soma.diam = 30
+	soma.nseg = 1
+	insert hh
+    }
+    synlist = new List()
+    soma esyn_for_spon = new Exp2Syn(0.8)
+    synlist.append(esyn_for_spon)
+    for i=0, 9{
+	soma esyn[i] = new Exp2Syn(0.8)
+	synlist.append(esyn[i])
+    }
+}
+
+endtemplate HHneuronI
