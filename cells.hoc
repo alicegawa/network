@@ -3,13 +3,11 @@ begintemplate HHneuronE
 
 public soma, synlist
 create soma
-objref esyn, esyn_for_spon
+objref esyn, esyn_for_spon, esynSTDP
 objref synlist
-nsyn = 990
-objectvar esyn2[nsyn]
 
-proc init(){local x, y, z, i
-    x=$1 y=$2 z=$3
+proc init(){local x, y, z, nsyn, i
+    x=$1 y=$2 z=$3 nsyn=$4
     soma {
 	pt3dclear() pt3dadd(0+x,0+y,0+z,12) pt3dadd(15+x,0+y,0+z,12)
     }
@@ -27,9 +25,11 @@ proc init(){local x, y, z, i
 	synlist.append(esyn)
 	esyn_for_spon = new Exp2Syn(0.85)
 	synlist.append(esyn_for_spon)
+	//printf("before for section\n")
 	for i=0, nsyn-1 {
-	    esyn2[i] = new ExpSynSTDP(0.5)
-	    synlist.append(esyn2[i])
+	    //printf("%d \n",i)
+	    esynSTDP = new ExpSynSTDP(0.5)
+	    synlist.append(esynSTDP)
 	}
     }
 }
@@ -41,12 +41,10 @@ begintemplate HHneuronI
 public soma, synlist
 create soma
 objref synlist
-objref esyn_for_spon, dammy
-nsyn = 990
-objectvar esyn[nsyn]
+objref esyn_for_spon, dammy, esyn
 
-proc init(){local x, y, z, i
-    x=$1 y=$2 z=$3
+proc init(){local x, y, z, nsyn, i
+    x=$1 y=$2 z=$3 nsyn=$4
     soma{
 	L = 30
 	soma.diam = 30
@@ -60,8 +58,8 @@ proc init(){local x, y, z, i
 	esyn_for_spon = new Exp2Syn(0.8)
 	synlist.append(esyn_for_spon)
 	for i=0, nsyn-1{
-	    esyn[i] = new Exp2Syn(0.5)
-	    synlist.append(esyn[i])
+	    esyn = new Exp2Syn(0.5)
+	    synlist.append(esyn)
 	}
     }
 }

@@ -34,9 +34,9 @@ proc makeCells(){local i, num_cell, num_ecell localobj cell
     counter2 = 0
     for i=0, num_cell-1 {
 	if(i<num_ecell){
-	    cell = new HHneuronE(160*counter2,20*(i%10),0)
+	    cell = new HHneuronE(160*counter2,20*(i%10),0, NSYN_MAX)
 	}else{
-	    cell = new HHneuronI(160*counter2,20*(i%10), 0)
+	    cell = new HHneuronI(160*counter2,20*(i%10), 0, NSYN_MAX)
 	}
 	cells.append(cell)
 	counter = counter + 1
@@ -72,14 +72,18 @@ proc connectCells() { local i localobj src, target, syn, nc
 		    cells.object(mem).synlist.object(2).forSpike = 0//need to consider(the number of times when it recieves the spike. if all expsynstdp responces, the increase of DA is much larger than expected.(?)
 		}
 	    }else{
-		mem = int((r.uniform(0,num_ecell)-1))
+		mem = int((r.uniform(0,NCELL_E)-1))
 		target = cells.object(mem)
 	    }
 	    if(count[mem]>=NSYN_MAX){
 		continue
 	    }//for avoiding error
+	    //kokomade ha OK
+	    //printf("for debug_a\n")
 	    syn = target.synlist.object(2+int(count[mem]))
+	    //printf("for Debug_b\n")
 	    count[mem] = count[mem] + 1
+	    //printf("for debug_c\n")
 	    if(i>=NCELL_E){
 		syn.e = -100 //???
 	    }
@@ -119,5 +123,5 @@ finitialize(v_init)
 fcurrent()
 makeCells(NCELL,NCELL_E)
 initCount()
-connectCells()//this func has some fault!!
+connectCells()
 setStim()
