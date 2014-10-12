@@ -99,7 +99,7 @@ proc setStim(){local i
     //num_vta = $2
     //dur = $3
     nclist_stim = new List()
-    for i=0, num_vta-1 {
+    for i=0, NCELL_VTA-1 {
 	stim[i] = new NetStim()
 	stim.number = stimNum
 	stim.start = 5
@@ -119,5 +119,5 @@ finitialize(v_init)
 fcurrent()
 makeCells(NCELL,NCELL_E)
 initCount()
-connectCells()
+connectCells()//this func has some fault!!
 setStim()
