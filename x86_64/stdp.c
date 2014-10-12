@@ -217,7 +217,7 @@ static void nrn_alloc(Prop* _prop) {
  	minWeight = 0;
  	numbre = 0;
  	debug = 1;
- 	forSpike = 0;
+ 	forSpike = 2;
  	tmp = 0;
  	forDA = 0.02;
   }
