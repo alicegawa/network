@@ -1,3 +1,6 @@
+//the next case problem
+//add the DA-signaling section from plusDA
+
 load_file("nrngui.hoc")
 //load cell template
 load_file("cells.hoc")
@@ -7,23 +10,28 @@ v_init = -65
 NCELL = 100
 NCELL_E = 80 //must be (<NCELL)
 NCELL_VTA = 10
+NCELL_CS = 10
 NSYN = 10
 NSYN_MAX = (NCELL-1)*NSYN
 
-tstop = 10000
-dt = 0.025
-stimInt = 20
+tstop = 500//100000
+dt = 0.1//0.025
+t = 0
+stimInt = 20//1000
 stimNum = int(tstop/stimInt)
 dur = tstop
 //identify the VTA parameter
 vta_flag = 0
 else_flag = 2
 
+//for Dopamine Signaling
+//DA = 0.01
+
 //counter. in connecting section. 1synapse=1cell:1cell
 double count[NCELL] //Here should be modified in vector.
 
-objref cells, nclist, nclist_stim, nclist_spon
-objectvar stim[NCELL_E], sponFire[NCELL]
+objref cells, nclist, nclist_us, nclist_spon, nclist_cs
+objectvar us[NCELL_VTA], sponFire[NCELL], cs[NCELL_CS]
 objref r //for random
 
 proc makeCells(){local i, num_cell, num_ecell localobj cell
@@ -54,40 +62,39 @@ proc initCount() { local i
 }
 
 
-proc connectCells() { local i localobj src, target, syn, nc
-    //num_ecell = $1
-    //num_syn = $2
-    //num_vta = $3
-    //nsyn_max = $4
+proc connectCells() { local i, num_ecell, num_syn, num_vta, nsyn_max localobj src, target, syn, nc
+    num_ecell = $1
+    num_syn = $2
+    num_vta = $3
+    nsyn_max = $4
     nclist = new List()
     r = new Random(25525)
     mem = -1//?
     for i=0, cells.count-1 {
 	src = cells.object(i)
-	for j=0, NSYN-1 {
-	    if(i<NCELL_E){
+	for j=0, num_syn-1 {
+	    if(i<num_ecell){
 		mem = int((i+r.uniform(1,cells.count-1)))%cells.count
 		target = cells.object(mem)
-		if(mem<NCELL_VTA){
-		    cells.object(mem).synlist.object(2).forSpike = 0//need to consider(the number of times when it recieves the spike. if all expsynstdp responces, the increase of DA is much larger than expected.(?)
+		if(mem<num_vta){
+		    cells.object(mem).synlist.object(2).forSpike = 0//need to consider(the number of times when it recieves the spike. if all expsynstdp responces, the increase of DA is much larger than expected.(?)->this description shows that when a cell in vta is fired, only one synapse is responded. on hasu!!
 		}
 	    }else{
-		mem = int((r.uniform(0,NCELL_E)-1))
+		mem = int((r.uniform(0,num_ecell)-1))
 		target = cells.object(mem)
 	    }
-	    if(count[mem]>=NSYN_MAX){
+	    if(count[mem]>=nsyn_max){
 		continue
 	    }//for avoiding error
 	    //kokomade ha OK
-	    //printf("for debug_a\n")
 	    syn = target.synlist.object(2+int(count[mem]))
-	    //printf("for Debug_b\n")
 	    count[mem] = count[mem] + 1
-	    //printf("for debug_c\n")
-	    if(i>=NCELL_E){
+	    //below sentense, it confirms whether count is updated or not.
+	    //printf("mem = %d, count[%d] = %d \n",mem,mem,int(count[mem]))
+	    if(i>=num_ecell){
 		syn.e = -100 //???
 	    }
-	    if(i<NCELL_E){
+	    if(i<num_ecell){
 		cells.object(i).soma nclist.append(new NetCon(&v(0.5),syn,0,0,0.02))//in this section, this writing manner describes that various neurons input to one neuron at only one synapse. this should be modified.->add some codes by introducing the count[NCELL]
 	    }else{
 		cells.object(i).soma nclist.append(new NetCon(&v(0.5),syn,-80,0,0.1))//weight should be modified following to Izhikevidh 2007.
@@ -96,32 +103,148 @@ proc connectCells() { local i localobj src, target, syn, nc
     }
 }
 
+proc connectCellsTest() { local i, num_ecell, num_syn, num_vta, nsyn_max localobj src, target, syn, nc
+    num_ecell = $1
+    num_syn = $2
+    num_vta = $3
+    nsyn_max = $4
+    nclist = new List()
+    r = new Random(25525)
+    mem = -1//?
+    src = cells.object(1)
+    mem = 0
+    target = cells.object(mem)
+    cells.object(mem).synlist.object(2).forSpike = 0
+    syn = target.synlist.object(2)
+    cells.object(1).soma nclist.append(new NetCon(&v(0.5),syn,0,0,0.1))   
+}
+
+
+
 
 //ins setStim section, it is remained to describe that what cells is potentiated by DA. So, let's add in next case.
-proc setStim(){local i
-    //stim_num = $1
-    //num_vta = $2
-    //dur = $3
-    nclist_stim = new List()
-    for i=0, NCELL_VTA-1 {
-	stim[i] = new NetStim()
-	stim.number = stimNum
-	stim.start = 5
-	nclist_stim.append(new NetCon(stim[i], cells.object(i).synlist.object(0),0,0,0.02))//weight should be modified
+proc setStim(){local i, stim_num, num_vta, dur, num_cs, stim_int
+    stim_num = $1
+    num_vta = $2
+    dur = $3
+    num_cs = $4
+    stim_int = $5
+    nclist_us = new List()
+    for i=0, num_vta-1 {
+	us[i] = new NetStim()
+	us[i].number = stim_num
+	us[i].start = 25
+	us[i].interval = stim_int
+	us[i].noise = 0.1
+	nclist_us.append(new NetCon(us[i], cells.object(i).synlist.object(0),0,0,0.02))//weight should be modified
     }
-    nclist_spon = new List()
-    for i=0, cells.count-1 {
-	sponFire[i] = new GammaNoise(0.8)
-	sponFire[i].amp = 0.065
-	sponFire[i].dur = dur
-	sponFire[i].del = 0
-	nclist_spon.append(new NetCon(sponFire[i],cells.object(i).synlist.object(1),0,0,0.02))//0.02 ha imanotokoro koteide
+    //nclist_spon = new List()
+    //for i=0, cells.count-1 {
+//	sponFire[i] = new GammaNoise(0.8)
+//	sponFire[i].amp = 0.065
+//	sponFire[i].dur = dur
+//	sponFire[i].del = 0
+//	nclist_spon.append(new NetCon(sponFire[i],cells.object(i).synlist.object(1),0,0,0.02))//0.02 ha imanotokoro koteide
+  //  }
+    
+    nclist_cs = new List()
+    for i=0, num_cs-1{
+	cs[i] = new NetStim()
+	cs[i].number = stim_num
+	cs[i].start = 5
+	cs[i].interval = stim_int
+	cs[i].noise = 0.1
+	nclist_cs.append(new NetCon(cs[i],cells.object(num_cs+i).synlist.object(0),0,0,0.02))//sasiatari No. NCELL_CS~ no 10 ko wo sitei
+    }
+	
+}
+
+proc setStimTest(){local i, stim_num, num_vta, dur, num_cs, stim_int
+    stim_num = $1
+    num_vta = $2
+    dur = $3
+    num_cs = $4
+    stim_int = $5
+    nclist_us = new List()
+    
+    us[0] = new NetStim()
+    us[0].number = 500//stim_num
+    us[0].start = 10//25
+    us[0].interval = 25//stim_int
+    us[0].noise = 0.1
+    nclist_us.append(new NetCon(us[0], cells.object(0).synlist.object(0),0,0,0.02))//weight should be modified
+    
+    //nclist_spon = new List()
+    //for i=0, cells.count-1 {
+//	sponFire[i] = new GammaNoise(0.8)
+//	sponFire[i].amp = 0.065
+//	sponFire[i].dur = dur
+//	sponFire[i].del = 0
+//	nclist_spon.append(new NetCon(sponFire[i],cells.object(i).synlist.object(1),0,0,0.02))//0.02 ha imanotokoro koteide
+//    }
+    
+    nclist_cs = new List()
+    cs[0] = new NetStim()
+    cs[0].number = 250//stim_num
+    cs[0].start = 20//5
+    cs[0].interval = 50//stim_int
+    cs[0].noise = 0.1
+    nclist_cs.append(new NetCon(cs[0],cells.object(1).synlist.object(0),0,0,0.02))//sasiatari No. NCELL_CS~ no 10 ko wo sitei	
+}
+
+proc signalDA() {local i, counter, tmpDA, num_vta, num_ecell, nsyn_max
+    num_vta = $1
+    num_ecell = $2
+    nsyn_max = $3
+    counter = 0
+    tmpDA = cells.object(0).synlist.object(2).forDA
+    tmpDA = tmpDA * 0.9999995
+    for i=0, num_vta-1 {
+	counter = counter + 1
+	if(cells.object(i).synlist.object(2).forSpike==1){
+	    cells.object(i).synlist.object(2).forSpike = 0
+	    tmpDA = tmpDA + 1
+	    printf("%d th cell in VTAp is firing\n",counter)
+	}
+    }
+    //tmpDA = tmpDA * 0.995 //if following Izhikevich, here should be this discription
+    for i=0, num_ecell-1 {
+	for j=0, nsyn_max-1 {
+	    cells.object(i).synlist.object(j+2).forDA = tmpDA
+	}
     }
 }
+makeCells(NCELL,NCELL_E)
+initCount()
+connectCells(NCELL_E, NSYN, NCELL_VTA, NSYN_MAX)
+setStim(stimNum, NCELL_VTA, dur, NCELL_CS,stimInt)
+
+///////////////////for test////////////////////////////////////
+//objref stim3
+//stim3 = new NetStim()
+//stim3.interval = 20
+//stim3.number = 50
+//stim3.start = 12530
+//stim3.noise = 0
+
+//objref test
+//test = new List()
+//test.append(new NetCon(stim3,cells.object(1).synlist.object(0),0.0,1,0.02))
+
+//////////////////end of for test//////////////////////////////
+
 
 finitialize(v_init)
 fcurrent()
-makeCells(NCELL,NCELL_E)
-initCount()
-connectCells()
-setStim()
+//signalDA(NCELL_VTA, NCELL_E, NSYN_MAX)
+//run()
+time_counter=0
+while(t<tstop) {
+    fadvance()
+    signalDA(NCELL_VTA, NCELL_E, NSYN_MAX)
+    if(t>(time_counter*20+25)){
+	printf("now is %7.2f sec \n",t)
+	time_counter = time_counter + 1
+    }
+}
+printf("DA = %lf \n",cells.object(0).synlist.object(2).forDA)

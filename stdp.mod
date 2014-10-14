@@ -62,33 +62,33 @@ DERIVATIVE state {
 NET_RECEIVE(w (uS), tpre (ms)) {
     INITIAL { tpre = -1e9 }
     numbre = numbre + 1
-    printf("Enter in net receive section.\n")
-    printf("flag = %g, %g times \n",flag,numbre)
+    :printf("Enter in net receive section.\n")
+    :printf("flag = %g, %g times \n",flag,numbre)
     if (flag == 0) { : presynaptic spike  (after last post so depress)
-	printf("from pre to post. %g\n", flag)
-	printf("before g = %g\n",g)
-	printf("the w to add is %g",w)
+	:printf("from pre to post. %g\n", flag)
+	:printf("before g = %g\n",g)
+	:printf("the w to add is %g",w)
 	g = g + w
-	printf("after g = %g\n",g)
+	:printf("after g = %g\n",g)
 	if(learning) {
-	    printf("enter the learning section.\n")
+	    :printf("enter the learning section.\n")
 	    if (w>=minWeight){
 		debug = tpost - t:LR*d*exp((tpost-t)/dtau)
-		printf("%g \n",debug)
+		:printf("%g \n",debug)
 		w = w-(1+forDA)*LR*d*exp((tpost - t)/dtau)
-		printf("after w = %g\n",w)
+		:printf("after w = %g\n",w)
 		if(w<=minWeight){
 		    w=minWeight
 		}
 		:w = w*LR*d*(1-(exp((tpost - t)/dtau)))
 		:if(verbose) {
-		    printf("dep: w=%g \t dw=%g \t dt=%g\n", w, -LR*d*exp((tpost - t)/dtau), tpost-t)
+		 :   printf("dep: w=%g \t dw=%g \t dt=%g\n", w, -LR*d*exp((tpost - t)/dtau), tpost-t)
 		:}
 	    }
 	}
 	tpre = t
     }else if (flag == 2) { : postsynaptic spike
-	printf("now is here(post to pre) %g \n",flag)
+	:printf("now is here(post to pre) %g \n",flag)
 	tmp=forSpike
 	if ( forSpike == 2){
 	    :skip to change forSpike
@@ -96,32 +96,32 @@ NET_RECEIVE(w (uS), tpre (ms)) {
 	    forSpike=1
 	}
 	
-	if(forSpike!=tmp){
-	    printf("forSpike is changed!!\n")
-	}
+	:if(forSpike!=tmp){
+	 :   printf("forSpike is changed!!\n")
+	:}
 	
 	tpost = t
 	FOR_NETCONS(w1,tp){
             if(learning) {
-		printf("enter the learning section\n")
+	:	printf("enter the learning section\n")
 		if(w1<=maxWeight){
         	    
 		    debug = LR*p*exp((tp-t)/ptau)
-		    printf("%g \n",debug)
+	:	    printf("%g \n",debug)
 	            w1 = w1 + (1+forDA)*LR*p*exp((tp-t)/ptau):w1 = w1+LR*p*exp((tp - t)/ptau)
-		    printf("after w1 = %g\n",w1)
+	:	    printf("after w1 = %g\n",w1)
 		}
 		if(w1>maxWeight){:if (w1>maxWeight){
 	            w1=maxWeight:w1 = maxWeight
 		}
-		if(verbose) {
-	            printf("pot: w=%g \t dw=%g \t dt=%g\n", w1, (LR*p*exp((tp - t)/ptau)), t - tp)
-		}
+	:	if(verbose) {
+	 :           printf("pot: w=%g \t dw=%g \t dt=%g\n", w1, (LR*p*exp((tp - t)/ptau)), t - tp)
+	:	}
 	    }
 	}
 	
     } else { : flag == 1 from INITIAL block
-	printf("else section")
+	:printf("else section")
 	WATCH (v > -20) 2
     }
 }

@@ -314,39 +314,25 @@ static void _net_receive (_pnt, _args, _lflag) Point_process* _pnt; double* _arg
  _tsav = t;   if (_lflag == 1. ) {*(_tqitem) = 0;}
  {
    numbre = numbre + 1.0 ;
-   printf ( "Enter in net receive section.\n" ) ;
-   printf ( "flag = %g, %g times \n" , _lflag , numbre ) ;
    if ( _lflag  == 0.0 ) {
-     printf ( "from pre to post. %g\n" , _lflag ) ;
-     printf ( "before g = %g\n" , g ) ;
-     printf ( "the w to add is %g" , _args[0] ) ;
      g = g + _args[0] ;
-     printf ( "after g = %g\n" , g ) ;
      if ( learning ) {
-       printf ( "enter the learning section.\n" ) ;
        if ( _args[0] >= minWeight ) {
          debug = tpost - t ;
-         printf ( "%g \n" , debug ) ;
          _args[0] = _args[0] - ( 1.0 + forDA ) * LR * d * exp ( ( tpost - t ) / dtau ) ;
-         printf ( "after w = %g\n" , _args[0] ) ;
          if ( _args[0] <= minWeight ) {
            _args[0] = minWeight ;
            }
-         printf ( "dep: w=%g \t dw=%g \t dt=%g\n" , _args[0] , - LR * d * exp ( ( tpost - t ) / dtau ) , tpost - t ) ;
          }
        }
      _args[1] = t ;
      }
    else if ( _lflag  == 2.0 ) {
-     printf ( "now is here(post to pre) %g \n" , _lflag ) ;
      tmp = forSpike ;
      if ( forSpike  == 2.0 ) {
        }
      else {
        forSpike = 1.0 ;
-       }
-     if ( forSpike  != tmp ) {
-       printf ( "forSpike is changed!!\n" ) ;
        }
      tpost = t ;
      {int _ifn1, _nfn1; double* _fnargs1, **_fnargslist1;
@@ -355,25 +341,18 @@ static void _net_receive (_pnt, _args, _lflag) Point_process* _pnt; double* _arg
  	 _fnargs1 = _fnargslist1[_ifn1];
  {
        if ( learning ) {
-         printf ( "enter the learning section\n" ) ;
          if ( _fnargs1[0] <= maxWeight ) {
            debug = LR * p * exp ( ( _fnargs1[1] - t ) / ptau ) ;
-           printf ( "%g \n" , debug ) ;
            _fnargs1[0] = _fnargs1[0] + ( 1.0 + forDA ) * LR * p * exp ( ( _fnargs1[1] - t ) / ptau ) ;
-           printf ( "after w1 = %g\n" , _fnargs1[0] ) ;
            }
          if ( _fnargs1[0] > maxWeight ) {
            _fnargs1[0] = maxWeight ;
-           }
-         if ( verbose ) {
-           printf ( "pot: w=%g \t dw=%g \t dt=%g\n" , _fnargs1[0] , ( LR * p * exp ( ( _fnargs1[1] - t ) / ptau ) ) , t - _fnargs1[1] ) ;
            }
          }
        }
      	}}
  }
    else {
-     printf ( "else section" ) ;
        _nrn_watch_activate(_watch_array, _watch1_cond, 1, _pnt, _watch_rm++, 2.0);
  }
    } }
