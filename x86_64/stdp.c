@@ -405,7 +405,7 @@ static void initmodel(double* _p, Datum* _ppvar, Datum* _thread, _NrnThread* _nt
   int _i; double _save;{
   g = g0;
  {
-   g = 0.01 ;
+   g = 0.0 ;
    tpost = - 1e9 ;
    net_send ( _tqitem, (double*)0, _ppvar[1]._pvoid, t +  0.0 , 1.0 ) ;
    }
