@@ -3,8 +3,6 @@
 
 load_file("nrngui.hoc")
 //load cell template
-load_file("cells.hoc")
-
 //setting
 v_init = -65
 NCELL = 100
@@ -24,155 +22,11 @@ dur = tstop
 vta_flag = 0
 else_flag = 2
 
-//for Dopamine Signaling
-//DA = 0.01
+load_file("cells.hoc")
+load_file("connectCells.hoc")
+load_file("setStim.hoc")
+load_file("signalDA.hoc")
 
-//counter. in connecting section. 1synapse=1cell:1cell
-double count[NCELL] //Here should be modified in vector.
-
-objref cells, nclist, nclist_us, nclist_spon, nclist_cs
-objectvar us[NCELL_VTA], sponFire[NCELL], cs[NCELL_CS]
-objref r //for random
-
-double rec_connect[NCELL][NSYN]
-
-
-proc makeCells(){local i, num_cell, num_ecell localobj cell
-    num_cell = $1
-    num_ecell = $2
-    cells = new List()
-    counter = 0
-    counter2 = 0
-    for i=0, num_cell-1 {
-	if(i<num_ecell){
-	    cell = new HHneuronE(160*counter2,20*(i%10),0, NSYN_MAX)
-	}else{
-	    cell = new HHneuronI(160*counter2,20*(i%10), 0, NSYN_MAX)
-	}
-	cells.append(cell)
-	counter = counter + 1
-	if(counter==10){
-	    counter = 0
-	    counter2 = counter2 + 1
-	}
-    }
-}
-
-proc initCount() { local i
-    for i=0, cells.count-1 {
-	count[i] = 0
-    }
-}
-
-
-proc connectCells() { local i, num_ecell, num_syn, num_vta, nsyn_max localobj src, target, syn, nc
-    num_ecell = $1
-    num_syn = $2
-    num_vta = $3
-    nsyn_max = $4
-    nclist = new List()
-    r = new Random(25525)
-    mem = -1//?
-    for i=0, cells.count-1 {
-	src = cells.object(i)
-	for j=0, num_syn-1 {
-	    if(i<num_ecell){
-		mem = int((i+r.uniform(1,cells.count-1)))%cells.count
-		target = cells.object(mem)
-		if(mem<num_vta){
-		    cells.object(mem).synlist.object(2).forSpike = 0//need to consider(the number of times when it recieves the spike. if all expsynstdp responces, the increase of DA is much larger than expected.(?)->this description shows that when a cell in vta is fired, only one synapse is responded. on hasu!!
-		}
-	    }else{
-		mem = int((r.uniform(0,num_ecell)-1))
-		target = cells.object(mem)
-	    }
-	    if(count[mem]>=nsyn_max){
-		continue
-	    }//for avoiding error
-	    
-	    
-	    rec_connect[i][j] = mem
-	    //kokomade ha OK
-	    syn = target.synlist.object(2+int(count[mem]))
-	    count[mem] = count[mem] + 1
-	    //below sentense, it confirms whether count is updated or not.
-	    //printf("mem = %d, count[%d] = %d \n",mem,mem,int(count[mem]))
-	    if(i>=num_ecell){
-		syn.e = -100 //???
-	    }
-	    if(i<num_ecell){
-		cells.object(i).soma nclist.append(new NetCon(&v(0.5),syn,0,0,0.02))//in this section, this writing manner describes that various neurons input to one neuron at only one synapse. this should be modified.->add some codes by introducing the count[NCELL]
-	    }else{
-		cells.object(i).soma nclist.append(new NetCon(&v(0.5),syn,0,0,0.1))//weight should be modified following to Izhikevidh 2007.
-	    }
-	}
-    }
-}
-
-
-
-
-//ins setStim section, it is remained to describe that what cells is potentiated by DA. So, let's add in next case.
-proc setStim(){local i, stim_num, num_vta, dur, num_cs, stim_int
-    stim_num = $1
-    num_vta = $2
-    dur = $3
-    num_cs = $4
-    stim_int = $5
-    nclist_us = new List()
-    for i=0, num_vta-1 {
-	us[i] = new NetStim()
-	us[i].number = stim_num
-	us[i].start = 25
-	us[i].interval = stim_int
-	us[i].noise = 0.1
-	
-	nclist_us.append(new NetCon(us[i], cells.object(i).synlist.object(0),0,0,0.02))//weight should be modified
-    }
-    nclist_cs = new List()
-    for i=0, num_cs-1{    
-	cs[i] = new NetStim()
-	cs[i].number = stim_num
-	cs[i].start = 5
-	cs[i].interval = stim_int
-	cs[i].noise = 0.1
-	printf("%d\n",num_cs)
-	nclist_cs.append(new NetCon(cs[i],cells.object(num_cs+i).synlist.object(0),0,0,0.02))//sasiatari No. NCELL_CS~ no 10 ko wo sitei
-    }
-    
-    nclist_spon = new List()
-    for i=0, cells.count-1 {
-	sponFire[i] = new GammaNoise(0.8)
-	sponFire[i].amp = 0.065
-	sponFire[i].dur = dur
-	sponFire[i].del = 0
-	nclist_spon.append(new NetCon(sponFire[i],cells.object(i).synlist.object(1),0,0,0.02))//0.02 ha imanotokoro koteide
-    }
-    
-}
-
-proc signalDA() {local i, counter, tmpDA, num_vta, num_ecell, nsyn_max
-    num_vta = $1
-    num_ecell = $2
-    nsyn_max = $3
-    counter = 0
-    tmpDA = cells.object(0).synlist.object(2).forDA
-    tmpDA = tmpDA * 0.9999995
-    for i=0, num_vta-1 {
-	counter = counter + 1
-	if(cells.object(i).synlist.object(2).forSpike==1){
-	    cells.object(i).synlist.object(2).forSpike = 0
-	    tmpDA = tmpDA + 1
-	    printf("%d th cell in VTAp is firing\n",counter)
-	}
-    }
-//    tmpDA = tmpDA * 0.995 //if following Izhikevich, here should be this discription
-    for i=0, num_ecell-1 {
-	for j=0, nsyn_max-1 {
-	    cells.object(i).synlist.object(j+2).forDA = tmpDA
-	}
-    }
-}
 
 makeCells(NCELL,NCELL_E)
 initCount()

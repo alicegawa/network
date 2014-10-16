@@ -65,3 +65,27 @@ proc init(){local x, y, z, nsyn, i
 }
 
 endtemplate HHneuronI
+
+
+objref cells
+
+proc makeCells(){local i, num_cell, num_ecell localobj cell
+    num_cell = $1
+    num_ecell = $2
+    cells = new List()
+    counter = 0
+    counter2 = 0
+    for i=0, num_cell-1 {
+	if(i<num_ecell){
+	    cell = new HHneuronE(160*counter2,20*(i%10),0, NSYN_MAX)
+	}else{
+	    cell = new HHneuronI(160*counter2,20*(i%10), 0, NSYN_MAX)
+	}
+	cells.append(cell)
+	counter = counter + 1
+	if(counter==10){
+	    counter = 0
+	    counter2 = counter2 + 1
+	}
+    }
+}
