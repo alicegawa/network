@@ -39,6 +39,9 @@ proc connectCells() { local i, num_ecell, num_syn, num_vta, nsyn_max localobj sr
 		continue
 	    }//for avoiding error
 	    
+	    if(mem==0 || mem==1){
+		mem = 3//int((r.uniform(1,cells.count-1))%cells.count
+	    }
 	    
 	    rec_connect[i][j] = mem
 	    //kokomade ha OK
@@ -48,6 +51,7 @@ proc connectCells() { local i, num_ecell, num_syn, num_vta, nsyn_max localobj sr
 	    //printf("mem = %d, count[%d] = %d \n",mem,mem,int(count[mem]))
 	    if(i>=num_ecell){
 		syn.e = -100 //???
+		//printf("inhibit mem = %d, count[mem]=%d\n",mem,int(count[mem]))
 	    }
 	    if(i<num_ecell){
 		cells.object(i).soma nclist.append(new NetCon(&v(0.5),syn,0,0,0.02))//in this section, this writing manner describes that various neurons input to one neuron at only one synapse. this should be modified.->add some codes by introducing the count[NCELL]

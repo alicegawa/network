@@ -10,6 +10,7 @@ proc setStim(){local i, stim_num, num_vta, dur, num_cs, stim_int
     dur = $3
     num_cs = $4
     stim_int = $5
+    
     nclist_us = new List()
     for i=0, num_vta-1 {
 	us[i] = new NetStim()
@@ -24,13 +25,13 @@ proc setStim(){local i, stim_num, num_vta, dur, num_cs, stim_int
     for i=0, num_cs-1{    
 	cs[i] = new NetStim()
 	cs[i].number = stim_num
-	cs[i].start = 5
+	cs[i].start = 45
 	cs[i].interval = stim_int
 	cs[i].noise = 0.1
-	printf("%d\n",num_cs)
+//	printf("%d\n",num_cs)
 	nclist_cs.append(new NetCon(cs[i],cells.object(num_cs+i).synlist.object(0),0,0,0.02))//sasiatari No. NCELL_CS~ no 10 ko wo sitei
     }
-    
+    /*
     nclist_spon = new List()
     for i=0, cells.count-1 {
 	sponFire[i] = new GammaNoise(0.8)
@@ -38,6 +39,6 @@ proc setStim(){local i, stim_num, num_vta, dur, num_cs, stim_int
 	sponFire[i].dur = dur
 	sponFire[i].del = 0
 	nclist_spon.append(new NetCon(sponFire[i],cells.object(i).synlist.object(1),0,0,0.02))//0.02 ha imanotokoro koteide
-    }
+    }*/
     
 }
