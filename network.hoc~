@@ -1,0 +1,46 @@
+load_file("nrngui.hoc")
+//load cell template
+load_file("test_cell_ref.hoc")
+
+//setting
+v_init = -65
+NCELL = 100
+NCELL_E = 80 //must be (<NCELL)
+tstop = 10000
+dt = 0.025
+NSYN = 10
+
+objref cells, nclist
+objref stim, sponFire
+
+proc makeCells(){local i, num_cell, num_ecell localobj cell
+    num_cell = $1
+    num_ecell = $2
+    cells = new List()
+    counter = 0
+    counter2 = 0
+    for i=0, num_cell-1 {
+	if(i<num_ecell){
+	    cell = new HHneuronE(160*counter2,20*(i%10),0)
+	}else{
+	    cell = new HHneuronI(160*counter2,20(i%10), 0)
+	}
+	cells.append(cell)
+	counter = counter + 1
+	if(counter==10){
+	    counter = 0
+	    counter2 = counter2 + 1
+	}
+    }
+}
+
+proc connectCells() { local i, num_ecell, num_syn localobj src, target, syn, nc
+    num_ecell = $1
+    num_syn = $2
+    nclist = new List()
+    r = new Random(25525)
+    mem = -1//?
+    for i=0, cells.count-1 {
+	src = cells.object(i)
+	for j=0, num_syn-1 {
+	    if(i<
