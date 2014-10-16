@@ -1,0 +1,21 @@
+load_file("nrngui.hoc")
+
+double count[100]
+
+proc test() {local i
+    for i=0, 99{
+	count[i] = i
+	printf("count[%d]=%d\t",i,int(count[i]))
+    }
+    printf("\n")
+}
+
+proc confirm(){local i
+    for i=0, 99{
+	printf("count[%d]=%d\t",i,int(count[i]))
+    }
+    printf("\n")
+}
+
+test()
+confirm()

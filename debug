@@ -1,0 +1,19 @@
+HHneuronE[0].soma { nseg=1  L=30  Ra=35.4
+	/*location 0 attached to cell 0*/
+	/* First segment only */
+	insert morphology { diam=30}
+	insert capacitance { cm=1}
+	insert hh { gnabar_hh=0.12 gkbar_hh=0.036 gl_hh=0.0003 el_hh=-54.3}
+	insert na_ion { ena=50}
+	insert k_ion { ek=-77}
+
+
+HHneuronE[1].soma { nseg=1  L=30  Ra=35.4
+	/*location 0 attached to cell 1*/
+	/* First segment only */
+	insert morphology { diam=30}
+	insert capacitance { cm=1}
+	insert hh { gnabar_hh=0.12 gkbar_hh=0.036 gl_hh=0.0003 el_hh=-54.3}
+	insert na_ion { ena=50}
+	insert k_ion { ek=-77}
+

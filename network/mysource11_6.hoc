@@ -1,0 +1,234 @@
+//DAはこちらで定義したものが、modからアクセスできていないようなので、DAの量の更新およびそれによる結合強度変化もhocで行う方が無難な用だ。
+
+//当面問題になりそうなのは、どのようにsd＊DAを表現するかである。
+
+//mod内で、wを返すための変数を持っておいて、タイムステップ後とにそれを受け取り、その変化量をhocでみてsdとし、それにDAを掛けていく…とか？
+
+//weiは、nc.weightがNET_RECIEVEDで更新されるのなら、不要
+
+
+//fadvance（？）みたいにタイムステップごとにまわせる機構で使えそうなものを探したい！！！
+
+
+
+
+load_file("nrngui.hoc")
+// load my cell template
+load_file("testcell_ref.hoc")
+load_file("testcell_ref2.hoc")
+
+// simulation setting
+v_init = -65
+NCELL = 100
+tstop = 200
+dt = 0.05
+M = 10
+sm = 5
+//DA = 100 //dopamine signaling
+double wei[100][10]
+
+objref cells, nclist
+objref stim, ncstim
+objectvar stim1[10],ncstim1[10],stim2[10],ncstim2[10]
+objref tvec, idvec
+objref myplot
+objref r,rs
+
+proc makeCells() { local i, num_cell localobj cell
+    num_cell = $1
+    cells = new List()
+    counter = 0
+    counter2 = 0
+    for i=0, num_cell-1 {
+	if(i<10){
+	    cell = new B_BallStick2(160*counter2,20*(i%10),0)
+	}else{
+	    cell = new B_BallStick(160*counter2, 20*(i%10), 0)
+	}
+	
+	cells.append(cell)
+	counter = counter + 1
+	if(counter==10){
+		counter=0
+		counter2 = counter2 + 1
+	}
+    }
+}
+
+proc connectCells() { local i localobj src, target, syn, nc 
+    nclist = new List()
+    r = new Random(25000)
+    mem = -1
+    for i=0, cells.count-1 {
+	src = cells.object(i)
+	//target = cells.object(0)
+	//target = cells.object(int((i+r.uniform(1,cells.count-1)))%cells.count)
+	printf("M = %d\n", M)
+	for j=0,M-1 {
+	    //target = cells.object((i+1)%cells.count)
+	    if(i<cells.count*0.8){
+		mem = int((i+r.uniform(1,cells.count-1)))%cells.count
+		target = cells.object(mem)
+		//target = cells.object((i+1)%cells.count)	
+	    }else{
+		mem = int(r.uniform(0,int(0.8*cells.count)-1))
+		target = cells.object(mem)
+		//target = cells.object((i+1)%cells.count)
+	    }	
+	    syn = target.synlist.object(j)
+	    if(i>=cells.count*0.8){
+		syn.e = -100
+	    }
+	    //printf("syn.tau = %f\n", syn.tau)
+
+	    nc = src.connect2target(syn)
+	    //printf("delay = %f\n", nc.delay)
+	    nclist.append(nc)
+	    nc.delay = 1
+	    if(i<cells.count*0.8){
+	    		nc.weight = 1/20
+	     }else{
+			nc.weight = 1//本当はー１にしたい
+	     }
+	     if(i>=cells.count*0.1 && i<cells.count*0.2){
+	     	        if(mem<cells.count*0.1){
+				   nc.weight = sm
+			}
+	     }
+	  wei[i][j]=0.01   
+	}
+    }
+}
+
+proc setStim() {
+    stim = new NetStim()
+    stim.number = 1
+    stim.start = 0
+    ncstim = new NetCon(stim, cells.object(0).synlist.object(0))
+    ncstim.delay = 0
+    ncstim.weight = 0.01
+}
+
+//US->VTA(これをコピペして、tstopの時間もながくして、あるセクションではこういう刺激、別のセクションではCS→USのように刺激を繰り返していくという行為を繰り返していくという形になるのだろう)
+proc setStim1() {local i
+    for i=0,9{
+    stim1[i] = new NetStim()
+    stim1[i].number = 10
+    stim1[i].start = 0
+    stim1[i].interval = 20
+    stim2[i] = new NetStim()
+    stim2[i].number = 10
+    stim2[i].start = 1
+    stim2[i].interval = 20
+    ncstim1[i] = new NetCon(stim1[i], cells.object(i).synlist.object(0))
+    ncstim1[i].delay = 0
+    ncstim1[i].weight = wei[i][i]
+    ncstim1[i].threshold = 0//
+    ncstim2[i] = new NetCon(stim2[i], cells.object(i+10).synlist.object(0))
+    ncstim2[i].delay = 0
+    ncstim2[i].weight = wei[i+10][i]
+    ncstim2[i].threshold = 0 //ちゃんとなおそう！！
+    //dadep()
+    //dasignal()
+}
+
+}
+
+
+//一部分の電圧を少量増減する操作をizhiもしていた気がする（何か違う気もするが）
+//izhiのコードだと13*(rand(0,1)-0.5)の電圧をステップ毎に入力なので、あながち間違いなやり方でもない?
+
+//NetConでの刺激強度をeの値をいじって変えることができるのなら、それでやった方がよい？
+//しかし、それだと初めの段階で、ランダムにではあるが刺激をどう与えるかというのを設定しておく必要があるのでは？
+proc setRandStim(){local i,j
+    rs = new Random(25000)
+    for i=0, tstop{
+	for j=0, cells.count-1{
+	    cells.object(j).soma.v(0.5) = cells.object(j).soma.v(0.5) + 13*(r.uniform(0,1)-0.5)
+	}
+    }
+    
+}
+
+
+proc dasignal(){local i
+     for i=0,9{
+     	 if(cells.object(i).soma.v(0.5)>=30){
+		DA += 0.04
+		}
+              }
+}
+
+proc dadep(){
+     DA *= 0.995
+}
+
+proc setSpikeRecorder() { local i localobj nc, nil
+    tvec = new Vector()
+    idvec = new Vector()
+    for i=0, nclist.count-1 {
+    	     	printf(" aaa \n")
+		nc = cells.object(int(i/M)).connect2target(nil)
+		printf(" bbb \n")
+		nc.record(tvec, idvec, i)
+    }
+}
+
+proc printSpike() { local i
+    printf("\ntime\t cell\n")
+    for i=0, tvec.size-1 {
+	printf("%g\t %d\n", tvec.x[i], idvec.x[i])
+    }
+}
+
+proc setPlot() {
+    myplot = new PlotShape()
+    myplot.show(0)
+    myplot.exec_menu("Shape Plot")
+    flush_list.append(myplot)
+}
+
+proc start(){
+    run()
+    printSpike()
+}
+//こちらでDAの計算は全て行い、それによりmodファイル内のDA濃度用の項を書き換える方針でいったとき！
+proc daWeight(){local i,j
+    for i=0,cells.count-1 {
+	for j=0, 9{
+	    cells.object(i).synlist.object(j).forDA = DA
+	}
+    }
+}
+
+
+proc ex(){
+    t=0
+    while(t<tstop){
+    fadvance()
+    dadep()
+    dasignal()
+    //setPlot() //フリーズするからここには絶対にいれない！
+    //printSpike()
+    if(t%30==0 || t%30==1){
+	printf("now is %lf\n",t)
+    }
+}
+}
+
+
+finitialize(v_init)
+fcurrent()
+makeCells(NCELL)
+connectCells()
+setStim1()
+setRandStim()
+//dadep()
+//dasignal()
+//fadvanceにする(for分でステップ分回しながら)
+setSpikeRecorder()
+setPlot()
+
+
+
+//quit()
