@@ -12,11 +12,11 @@ NCELL_CS = 10
 NSYN = 10
 NSYN_MAX = (NCELL-1)*NSYN
 
-tstop = 500//100000
+tstop = 200//500//100000
 dt = 0.025//<-for test0.1//0.025
 t = 0
 stimInt = 20//1000
-stimNum = int(tstop/stimInt)
+stimNum = 7//int(tstop/stimInt)
 dur = tstop
 //identify the VTA parameter
 vta_flag = 0
@@ -29,6 +29,7 @@ load_file("signalDA.hoc")
 
 
 makeCells(NCELL,NCELL_E)
+
 initCount()
 connectCells(NCELL_E, NSYN, NCELL_VTA, NSYN_MAX)
 
@@ -89,5 +90,13 @@ for i=0, cells.count-1 {
     sav_connect.printf("\n")
 }
 sav_connect.close()
+
+objref savSpike
+savSpike = new File()
+savSpike.wopen("spike.dat")
+for i=0, tvec.size()-1 {
+    savSpike.printf("%g\t%g\n",tvec.x(i),idvec.x(i))
+}
+savSpike.close()
 
 /////////////end of save section///////////////////////////////
