@@ -38,11 +38,10 @@ proc connectCells() { local i, num_ecell, num_syn, num_vta, nsyn_max localobj sr
 	    if(count[mem]>=nsyn_max){
 		continue
 	    }//for avoiding error
-	    
+	    /*
 	    if(mem==0 || mem==1){
 		mem = 3//int((r.uniform(1,cells.count-1))%cells.count
-	    }
-	    
+	    }*/
 	    rec_connect[i][j] = mem
 	    //kokomade ha OK
 	    syn = target.synlist.object(2+int(count[mem]))
