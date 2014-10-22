@@ -25,8 +25,8 @@ PARAMETER {
     k = 0 :counter
     n = 2.7 :parameter to adjust
     tmp_n = 1
-    THETA = 0.017:1.05 :parameter(sita no to awase te 3Hz kurai)
-    KAPPA = 0.16:0.01:parameter
+    THETA = 0.012:1.05 :parameter(sita no to awase te 3Hz kurai)
+    KAPPA = 0.11:0.01:parameter
     int_kappa = 1
     frac_kappa = 0
     b = 1

@@ -199,8 +199,8 @@ static void nrn_alloc(Prop* _prop) {
  	k = 0;
  	n = 2.7;
  	tmp_n = 1;
- 	THETA = 0.017;
- 	KAPPA = 0.16;
+ 	THETA = 0.012;
+ 	KAPPA = 0.11;
  	int_kappa = 1;
  	frac_kappa = 0;
  	b = 1;

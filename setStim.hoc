@@ -1,3 +1,8 @@
+/************************************************************************************************
+in the spontaneous section, whether the frequency that cells are firing is suited or not is unclear:
+1. cells are injected current that makes cells fired 2 Hz in separated situation (now is this)
+2. cells in network are fired in 2Hz on average ( each in network is firing in 2 Hz??) 
+************************************************************************************************/
 load_file("nrngui.hoc")
 
 objref nclist_us, nclist_spon, nclist_cs
