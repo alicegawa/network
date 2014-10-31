@@ -43,24 +43,25 @@ obfunc makeSyn(){local targetno, hostno, num_ecell, num_vta
     hostno = $2
     num_ecell = $3
     num_vta = $4
-    if(targetno<num_ecell){
+    // if(targetno<num_ecell){
+    if(hostno<num_ecell){
 	soma { 
 	    syn_ = new ExpSynSTDP(0.5)
 	    synlist.append(syn_)
 	}
 	if(targetno<num_vta){
 	    syn_.forSpike = 0
-	}
+	}/*
 	if(hostno>=num_ecell){
-	    syn_.e=-100
-	}
+	    syn_.e = -100
+	}*/
     }else{
 	soma {
 	    syn_ = new Exp2Syn(0.5)
 	    synlist.append(syn_)
-	    if(hostno>=num_ecell){
-		syn_.e = -100
-	    }
+	    // if(hostno>=num_ecell){
+	    syn_.e = -100
+	    //	    }
 	}
     }
     return syn_

@@ -2,7 +2,7 @@ load_file("nrngui.hoc")
 
 objref nclist, r
 double count[NCELL]
-double rec_connect[NCELL][NSYN]
+//double rec_connect[NCELL][NCELL]//NSYN]
 
 
 
@@ -23,22 +23,27 @@ proc connectCells() { local i, num_ecell, num_syn, num_vta, nsyn_max localobj sr
     r = new Random(25525)
     mem = -1//?
     for i=0, cells.count-1 {
-	src = cells.object(i)
-	for j=0, num_syn-1 {
+	//src = cells.object(i)
+	for j=0, cells.count-1{//num_syn-1 {
+	    /*
 	    if(i<num_ecell){
 		mem =  int((i+r.uniform(1,cells.count-1)))%cells.count
 	    }else{
 		mem = int((r.uniform(0,num_ecell)-1))
-	    }
-	    rec_connect[i][j] = mem
-	    //kokomade ha OK
-	    target = cells.object(mem)
-	    syn = target.makeSyn(mem,i,NCELL_E,NCELL_VTA)
-	    count[mem] = count[mem] + 1
-	    if(i<num_ecell){
-		cells.object(i).soma nclist.append(new NetCon(&v(0.5),syn,0,0,0.0002))//in this section, this writing manner describes that various neurons input to one neuron at only one synapse. this should be modified.->add some codes by introducing the count[NCELL]
-	    }else{
-		cells.object(i).soma nclist.append(new NetCon(&v(0.5),syn,0,0,0.1))//weight should be modified following to Izhikevidh 2007.
+	    }*/
+	    for(k=0;k<con.x[i][j];k=k+1){
+		printf("i am %d th cell, and host is %d\n",i,j)
+		mem = j
+		//rec_connect[i][j] = mem
+		//kokomade ha OK
+		target = cells.object(i)
+		syn = target.makeSyn(i,mem,NCELL_E,NCELL_VTA)
+		//count[mem] = count[mem] + 1
+		if(mem<num_ecell){
+		    cells.object(mem).soma nclist.append(new NetCon(&v(0.5),syn,0,0,0.0002))//in this section, this writing manner describes that various neurons input to one neuron at only one synapse. this should be modified.->add some codes by introducing the count[NCELL]
+		}else{
+		    cells.object(mem).soma nclist.append(new NetCon(&v(0.5),syn,0,0,0.02))//weight should be modified following to Izhikevidh 2007.
+		}
 	    }
 	}
     }

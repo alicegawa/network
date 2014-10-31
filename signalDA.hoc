@@ -5,11 +5,11 @@ proc signalDA() {local i, counter, tmpDA, num_vta, num_ecell, nsyn_max
     num_vta = $1
     num_ecell = $2
     nsyn_max = $3
-    //counter = 0
+    counter = 0
     tmpDA = cells.object(0).synlist.object(2).forDA
     tmpDA = tmpDA * 0.995
     for i=0, num_vta-1 {
-	//counter = counter + 1
+
 	if(cells.object(i).synlist.object(2).forSpike==1){
 	    cells.object(i).synlist.object(2).forSpike = 0
 	    tmpDA = tmpDA + 0.04
@@ -17,9 +17,15 @@ proc signalDA() {local i, counter, tmpDA, num_vta, num_ecell, nsyn_max
 	}
     }
 //    tmpDA = tmpDA * 0.995 //if following Izhikevich, here should be this discription
-    for i=0, num_ecell-1 {
-	for j=0, cells.object(i).synlist.count-3 {
-	    cells.object(i).synlist.object(j+2).forDA = tmpDA
+    for i=0, cells.count-1 {//num_ecell-1 {
+	for j=0, num_ecell-1 {//cells.object(i).synlist.count-3 {
+	    
+	    for(k=0;k<con.x[i][j];k=k+1){
+		cells.object(i).synlist.object(counter+2).forDA = tmpDA
+		counter = counter + 1
+	    }
+	    
 	}
+	counter = 0
     }
 }

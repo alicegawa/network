@@ -22,6 +22,7 @@ dur = tstop
 vta_flag = 0
 else_flag = 2
 
+load_file("read.hoc")
 load_file("cells.hoc")
 load_file("connectCells.hoc")
 load_file("setStim.hoc")
@@ -41,7 +42,7 @@ sav_connect.wopen("connect.dat")
 for i=0, cells.count-1 {
     for j=0, NSYN-1 {
 //	sav_connect.printf("%g\t%g\n",int(rec_connect[i][j]),nclist.object(i*NSYN+j).weight)
-	sav_connect.printf("%g\n",int(rec_connect[i][j]))
+//	sav_connect.printf("%g\n",int(rec_connect[i][j]))
     }
     sav_connect.printf("\n")
 }
@@ -71,6 +72,7 @@ while(t<tstop){
     fadvance()
 }
 /////////////end execute section//////////////////////////////////////
+
 printf("the last da = %lf",cells.object(0).synlist.object(2).forDA)
 
 
@@ -89,9 +91,9 @@ sav_connect = new File()
 sav_connect.wopen("connect.dat")
 for i=0, cells.count-1 {
     for j=0, NSYN-1 {
-	sav_connect.printf("%g\t%g\n",int(rec_connect[i][j]),nclist.object(i*NSYN+j).weight)
+	//sav_connect.printf("%g\t%g\n",int(rec_connect[i][j]),nclist.object(i*NSYN+j).weight)
     }
-    sav_connect.printf("\n")
+    //sav_connect.printf("\n")
 }
 sav_connect.close()
 
